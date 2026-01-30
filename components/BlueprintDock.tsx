@@ -1,5 +1,5 @@
 import React from 'react';
-import { Download, NotebookText } from 'lucide-react';
+import { Download, Monitor } from 'lucide-react';
 import { Blueprint } from '../types';
 
 interface BlueprintDockProps {
@@ -21,9 +21,18 @@ export const BlueprintDock: React.FC<BlueprintDockProps> = ({ blueprint }) => {
     URL.revokeObjectURL(url);
   };
 
-  const handleNotebook = () => {
-     if(!blueprint) return;
-     alert("Sent to NotebookLM (Mock Action)");
+  const handleStation = () => {
+    if (!blueprint) return;
+
+    // Construct the deep link
+    const title = encodeURIComponent(blueprint.title);
+    // Format tech stack as a comma-separated string for the 'content' field
+    const content = encodeURIComponent(blueprint.techStack.join(', '));
+
+    const url = `station://add-resource?title=${title}&content=${content}`;
+
+    // Trigger the deep link
+    window.location.href = url;
   };
 
   return (
@@ -31,15 +40,15 @@ export const BlueprintDock: React.FC<BlueprintDockProps> = ({ blueprint }) => {
       <div className="text-xs text-magma-800 font-mono">
         SYSTEM_STATUS: <span className="text-green-900">ONLINE</span>
       </div>
-      
+
       <div className="flex gap-4">
         <button
           onClick={handleExport}
           disabled={isDisabled}
           className={`
             flex items-center gap-2 px-6 py-2 border font-mono text-xs font-bold tracking-wider uppercase transition-all
-            ${isDisabled 
-              ? 'border-magma-900 text-magma-900 cursor-not-allowed opacity-50' 
+            ${isDisabled
+              ? 'border-magma-900 text-magma-900 cursor-not-allowed opacity-50'
               : 'border-magma-600 text-magma-500 hover:bg-magma-900/20 hover:text-magma-300 hover:border-magma-400 hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}
           `}
         >
@@ -48,17 +57,17 @@ export const BlueprintDock: React.FC<BlueprintDockProps> = ({ blueprint }) => {
         </button>
 
         <button
-           onClick={handleNotebook}
-           disabled={isDisabled}
-           className={`
+          onClick={handleStation}
+          disabled={isDisabled}
+          className={`
             flex items-center gap-2 px-6 py-2 border font-mono text-xs font-bold tracking-wider uppercase transition-all
-            ${isDisabled 
-              ? 'border-magma-900 text-magma-900 cursor-not-allowed opacity-50' 
+            ${isDisabled
+              ? 'border-magma-900 text-magma-900 cursor-not-allowed opacity-50'
               : 'border-magma-600 text-magma-500 hover:bg-magma-900/20 hover:text-magma-300 hover:border-magma-400 hover:shadow-[0_0_10px_rgba(249,115,22,0.3)]'}
           `}
         >
-          <NotebookText size={14} />
-          Send to NotebookLM
+          <Monitor size={14} />
+          Send to Station
         </button>
       </div>
     </div>
