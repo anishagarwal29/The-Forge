@@ -5,7 +5,6 @@ let genAI: GoogleGenAI | null = null;
 
 const getAI = () => {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-  console.log("Forge AI Service: Checking API Key...", apiKey ? "FOUND (Starts with " + apiKey.substring(0, 4) + ")" : "MISSING");
   if (!genAI && apiKey) {
     genAI = new GoogleGenAI({ apiKey });
   }
