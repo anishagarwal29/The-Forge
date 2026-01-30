@@ -4,14 +4,16 @@ import { Blueprint, ForgeSettings } from '../types';
 let genAI: GoogleGenAI | null = null;
 
 const getAI = () => {
-  if (!genAI && process.env.API_KEY) {
-    genAI = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  console.log("Forge AI Service: Checking API Key...", apiKey ? "FOUND (Starts with " + apiKey.substring(0, 4) + ")" : "MISSING");
+  if (!genAI && apiKey) {
+    genAI = new GoogleGenAI({ apiKey });
   }
   return genAI;
 };
 
 export const generateBlueprint = async (
-  prompt: string, 
+  prompt: string,
   settings: ForgeSettings
 ): Promise<Blueprint> => {
   const ai = getAI();
@@ -45,13 +47,13 @@ export const generateBlueprint = async (
             title: { type: Type.STRING },
             tagline: { type: Type.STRING },
             description: { type: Type.STRING },
-            techStack: { 
-              type: Type.ARRAY, 
-              items: { type: Type.STRING } 
+            techStack: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
             },
-            coreFeatures: { 
-              type: Type.ARRAY, 
-              items: { type: Type.STRING } 
+            coreFeatures: {
+              type: Type.ARRAY,
+              items: { type: Type.STRING }
             },
             architectureDiagram: { type: Type.STRING, description: "A creative text-based diagram or ASCII art representing the data flow." },
             estimatedComplexity: { type: Type.STRING },
@@ -71,42 +73,42 @@ export const generateBlueprint = async (
   }
 };
 
-export const generateSparks = async (): Promise<{text: string, type: 'COMBO'|'PIVOT'|'WILD'}[]> => {
-    const ai = getAI();
-    // Default sparks if API key is missing
-    if (!ai) return [
-      { text: "API Key Missing - Local Sparks Only", type: "WILD" },
-      { text: "Check Environment Variables", type: "PIVOT" }
-    ];
+export const generateSparks = async (): Promise<{ text: string, type: 'COMBO' | 'PIVOT' | 'WILD' }[]> => {
+  const ai = getAI();
+  // Default sparks if API key is missing
+  if (!ai) return [
+    { text: "API Key Missing - Local Sparks Only", type: "WILD" },
+    { text: "Check Environment Variables", type: "PIVOT" }
+  ];
 
-    try {
-        const response = await ai.models.generateContent({
-            model: "gemini-3-flash-preview",
-            contents: "Generate 3 short, punchy, abstract software ideas. Mix 'PIVOT' (changing direction), 'COMBO' (merging two genres), and 'WILD' (experimental art/tech). Max 10 words each.",
-            config: {
-                responseMimeType: "application/json",
-                responseSchema: {
-                  type: Type.ARRAY,
-                  items: {
-                    type: Type.OBJECT,
-                    properties: {
-                      text: { type: Type.STRING },
-                      type: { type: Type.STRING, enum: ["COMBO", "PIVOT", "WILD"] }
-                    },
-                    required: ["text", "type"]
-                  }
-                }
-            }
-        });
-        
-        if (response.text) {
-             const parsed = JSON.parse(response.text);
-             if (Array.isArray(parsed)) return parsed;
-             return [];
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: "Generate 3 short, punchy, abstract software ideas. Mix 'PIVOT' (changing direction), 'COMBO' (merging two genres), and 'WILD' (experimental art/tech). Max 10 words each.",
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.ARRAY,
+          items: {
+            type: Type.OBJECT,
+            properties: {
+              text: { type: Type.STRING },
+              type: { type: Type.STRING, enum: ["COMBO", "PIVOT", "WILD"] }
+            },
+            required: ["text", "type"]
+          }
         }
-        return [];
-    } catch (e) {
-        console.error(e);
-        return [{ text: "Spark ignition failed.", type: "WILD" }];
+      }
+    });
+
+    if (response.text) {
+      const parsed = JSON.parse(response.text);
+      if (Array.isArray(parsed)) return parsed;
+      return [];
     }
+    return [];
+  } catch (e) {
+    console.error(e);
+    return [{ text: "Spark ignition failed.", type: "WILD" }];
+  }
 }
