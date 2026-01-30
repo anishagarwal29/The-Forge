@@ -26,10 +26,12 @@ export const BlueprintDock: React.FC<BlueprintDockProps> = ({ blueprint }) => {
 
     // Construct the deep link
     const title = encodeURIComponent(blueprint.title);
-    // Format tech stack as a comma-separated string for the 'content' field
-    const content = encodeURIComponent(blueprint.techStack.join(', '));
+    // Pre-fill Forge URL
+    const currentUrl = encodeURIComponent(window.location.origin);
+    const tags = "CS"; // User requested 'CS' tag
+    const icon = "desktopcomputer"; // User requested computer icon
 
-    const url = `station://add-resource?title=${title}&content=${content}`;
+    const url = `station://add-resource?title=${title}&url=${currentUrl}&tags=${tags}&icon=${icon}`;
 
     // Trigger the deep link
     window.location.href = url;
