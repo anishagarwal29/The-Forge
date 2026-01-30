@@ -96,6 +96,12 @@ export default function App() {
     ));
   };
 
+  const handleClearWorkspace = () => {
+    setCurrentBlueprint(null);
+    setCurrentIdeaId(undefined);
+    setInputValue('');
+  };
+
   const handleSparkSelect = (text: string) => {
     setInputValue(text);
   };
@@ -112,6 +118,7 @@ export default function App() {
           onResurrect={handleResurrectIdea}
           onDelete={handleDeleteIdea}
           onUpdateStatus={handleUpdateStatus}
+          onClearWorkspace={handleClearWorkspace}
           currentIdeaId={currentIdeaId}
         />
 
