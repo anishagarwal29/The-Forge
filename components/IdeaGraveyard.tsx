@@ -138,7 +138,7 @@ export const IdeaGraveyard: React.FC<IdeaGraveyardProps> = ({ ideas, onResurrect
             {/* Hover Action */}
             <div className="h-0 group-hover:h-5 transition-all duration-300 overflow-hidden">
                 <div className="text-[10px] opacity-70 uppercase tracking-[0.2em] flex items-center gap-1 pt-1">
-                    >> RESURRECT
+                    &gt;&gt; RESURRECT
                 </div>
             </div>
           </div>
