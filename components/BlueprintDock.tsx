@@ -40,7 +40,7 @@ export const BlueprintDock: React.FC<BlueprintDockProps> = ({ blueprint }) => {
   return (
     <div className="h-16 border-t border-magma-900 bg-void flex items-center justify-between px-6 shrink-0 z-10">
       <div className="text-xs text-magma-800 font-mono">
-        SYSTEM_STATUS: <span className="text-green-900">ONLINE v2.0 (PERSISTENCE ACTIVE)</span>
+        SYSTEM_STATUS: <span className="text-green-900">ONLINE v2.1 (NEW SESSION ACTIVE)</span>
       </div>
 
       <div className="flex gap-4">
