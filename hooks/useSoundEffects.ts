@@ -4,11 +4,9 @@ export const useSoundEffects = () => {
     const audioContextRef = useRef<AudioContext | null>(null);
     const forgeLoopSourceRef = useRef<OscillatorNode | null>(null);
     const forgeLoopGainRef = useRef<GainNode | null>(null);
+    const lastSliderSoundTime = useRef<number>(0);
 
     useEffect(() => {
-        // Initialize AudioContext on first user interaction if possible, 
-        // but usually browsers require a gesture. 
-        // We'll lazily init in the play functions.
         return () => {
             if (audioContextRef.current) {
                 audioContextRef.current.close();
@@ -23,90 +21,152 @@ export const useSoundEffects = () => {
         return audioContextRef.current;
     };
 
-    const playForgeStart = useCallback(() => {
+    const playHover = useCallback(() => {
         const ctx = getContext();
-        if (ctx.state === 'suspended') {
-            ctx.resume();
-        }
-
+        if (ctx.state === 'suspended') ctx.resume();
         const t = ctx.currentTime;
 
-        // 1. Metallic Impact (high frequency noise/clang)
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(150, t);
-        osc.frequency.exponentialRampToValueAtTime(40, t + 0.5); // Drop in pitch
+        // High tech subtle chirp
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(800, t);
+        osc.frequency.exponentialRampToValueAtTime(1200, t + 0.05);
 
-        gain.gain.setValueAtTime(0.5, t);
-        gain.gain.exponentialRampToValueAtTime(0.01, t + 1);
+        gain.gain.setValueAtTime(0.02, t); // Very quiet
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.05);
 
         osc.connect(gain);
         gain.connect(ctx.destination);
-
         osc.start(t);
-        osc.stop(t + 1);
-
-        // 2. White Noise Burst (Simulate steam/fire)
-        const bufferSize = ctx.sampleRate * 0.5; // 0.5 sec
-        const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-        for (let i = 0; i < bufferSize; i++) {
-            data[i] = Math.random() * 2 - 1;
-        }
-
-        const noise = ctx.createBufferSource();
-        noise.buffer = buffer;
-        const noiseGain = ctx.createGain();
-
-        // Bandpass filter to make it sound like a heavy "thud"
-        const filter = ctx.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.value = 1000;
-
-        noiseGain.gain.setValueAtTime(0.8, t);
-        noiseGain.gain.exponentialRampToValueAtTime(0.01, t + 0.5);
-
-        noise.connect(filter);
-        filter.connect(noiseGain);
-        noiseGain.connect(ctx.destination);
-
-        noise.start(t);
+        osc.stop(t + 0.05);
     }, []);
 
-    const startForgingLoop = useCallback(() => {
+    const playClick = useCallback(() => {
         const ctx = getContext();
-        if (ctx.state === 'suspended') {
-            ctx.resume();
-        }
-
-        if (forgeLoopSourceRef.current) return; // Already playing
-
+        if (ctx.state === 'suspended') ctx.resume();
         const t = ctx.currentTime;
 
-        // Low rumble (Deep drone)
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Confirm blip
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(600, t);
+        osc.frequency.exponentialRampToValueAtTime(300, t + 0.1);
+
+        gain.gain.setValueAtTime(0.05, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.1);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(t);
+        osc.stop(t + 0.1);
+    }, []);
+
+    const playSliderChange = useCallback(() => {
+        const now = Date.now();
+        // Throttle: Max one click per 30ms
+        if (now - lastSliderSoundTime.current < 30) return;
+        lastSliderSoundTime.current = now;
+
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const t = ctx.currentTime;
+
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        // Mechanical ratchet click
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(200, t);
+
+        // Very short decay
+        gain.gain.setValueAtTime(0.03, t);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.03);
+
+        // Highpass filter to remove mud
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'highpass';
+        filter.frequency.value = 1000;
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.05);
+    }, []);
+
+    const playForgeStart = useCallback(() => {
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        const t = ctx.currentTime;
+
+        // "Engage" Sound - Futuristic Power Up
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
 
         osc.type = 'sawtooth';
-        osc.frequency.setValueAtTime(50, t);
+        osc.frequency.setValueAtTime(110, t);
+        osc.frequency.exponentialRampToValueAtTime(880, t + 0.3); // Octave sweep up
 
-        // Modulation to make it feel "alive"
-        const lfo = ctx.createOscillator();
-        lfo.type = 'sine';
-        lfo.frequency.value = 8; // 8Hz flutter
-        const lfoGain = ctx.createGain();
-        lfoGain.gain.value = 10; // Modulate frequency by +/- 10Hz
-
-        lfo.connect(lfoGain);
-        lfoGain.connect(osc.frequency);
-        lfo.start(t);
+        // Filter sweep
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.Q.value = 5;
+        filter.frequency.setValueAtTime(200, t);
+        filter.frequency.linearRampToValueAtTime(3000, t + 0.3);
 
         gain.gain.setValueAtTime(0, t);
-        gain.gain.linearRampToValueAtTime(0.2, t + 1); // Fade in
+        gain.gain.linearRampToValueAtTime(0.2, t + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
 
-        osc.connect(gain);
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(t);
+        osc.stop(t + 0.4);
+    }, []);
+
+    const startForgingLoop = useCallback(() => {
+        const ctx = getContext();
+        if (ctx.state === 'suspended') ctx.resume();
+        if (forgeLoopSourceRef.current) return;
+
+        const t = ctx.currentTime;
+
+        // Detailed Cyberpunk Drone
+        // Base layer: Low throbbing sine
+        const osc = ctx.createOscillator();
+        osc.type = 'sawtooth'; // Richer harmonics
+        osc.frequency.value = 55; // Low A
+
+        // Filter matches "energy" feel
+        const filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = 200;
+        filter.Q.value = 2;
+
+        // LFO to modulate filter cutoff -> "Breathing" effect
+        const lfo = ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 0.5; // Slow Pulse
+        const lfoGain = ctx.createGain();
+        lfoGain.gain.value = 150; // Modulate filter by +/- 150Hz
+
+        lfo.connect(lfoGain);
+        lfoGain.connect(filter.frequency);
+        lfo.start(t);
+
+        const gain = ctx.createGain();
+        gain.gain.setValueAtTime(0, t);
+        gain.gain.linearRampToValueAtTime(0.15, t + 2); // Slow fade in
+
+        osc.connect(filter);
+        filter.connect(gain);
         gain.connect(ctx.destination);
         osc.start(t);
 
@@ -115,7 +175,6 @@ export const useSoundEffects = () => {
     }, []);
 
     const stopForgingLoop = useCallback(() => {
-        // Ramp down gain
         if (forgeLoopGainRef.current && audioContextRef.current) {
             const t = audioContextRef.current.currentTime;
             forgeLoopGainRef.current.gain.cancelScheduledValues(t);
@@ -123,7 +182,6 @@ export const useSoundEffects = () => {
             forgeLoopGainRef.current.gain.linearRampToValueAtTime(0, t + 0.5);
         }
 
-        // Stop oscillator after fade out
         setTimeout(() => {
             if (forgeLoopSourceRef.current) {
                 forgeLoopSourceRef.current.stop();
@@ -141,29 +199,35 @@ export const useSoundEffects = () => {
         const ctx = getContext();
         const t = ctx.currentTime;
 
-        // Harmonic Chord (Progressive futuristic feel)
-        const freqs = [440, 554.37, 659.25]; // A major
+        // Computerized Data Burst
+        // Rapid arpeggio
+        const notes = [880, 1108, 1318, 1760]; // A5, C#6, E6, A6
 
-        freqs.forEach((f, i) => {
+        notes.forEach((f, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
 
             osc.type = 'sine';
             osc.frequency.value = f;
 
-            gain.gain.setValueAtTime(0, t);
-            gain.gain.linearRampToValueAtTime(0.1, t + 0.1);
-            gain.gain.exponentialRampToValueAtTime(0.001, t + 2 + i * 0.5);
+            const startTime = t + i * 0.05;
+
+            gain.gain.setValueAtTime(0, startTime);
+            gain.gain.linearRampToValueAtTime(0.1, startTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.2);
 
             osc.connect(gain);
             gain.connect(ctx.destination);
 
-            osc.start(t);
-            osc.stop(t + 3);
+            osc.start(startTime);
+            osc.stop(startTime + 0.2);
         });
     }, []);
 
     return {
+        playHover,
+        playClick,
+        playSliderChange,
         playForgeStart,
         startForgingLoop,
         stopForgingLoop,

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Sliders, Zap, RefreshCw } from 'lucide-react';
 import { ForgeSettings, Spark } from '../types';
 import { generateSparks } from '../services/geminiService';
+import { useSoundEffects } from '../hooks/useSoundEffects';
 
 interface RemixStationProps {
   settings: ForgeSettings;
@@ -12,9 +13,11 @@ interface RemixStationProps {
 export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettingsChange, onSelectSpark }) => {
   const [sparks, setSparks] = useState<Spark[]>([]);
   const [loadingSparks, setLoadingSparks] = useState(false);
+  const { playSliderChange, playHover, playClick } = useSoundEffects();
 
   const fetchSparks = async () => {
     setLoadingSparks(true);
+    playClick();
     const result = await generateSparks();
     const newSparks: Spark[] = result.map((item, i) => ({
       id: `live-${Date.now()}-${i}`,
@@ -30,6 +33,7 @@ export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettings
   }, []);
 
   const handleSliderChange = (key: keyof ForgeSettings, value: number) => {
+    playSliderChange();
     onSettingsChange({ ...settings, [key]: value });
   };
 
@@ -40,7 +44,7 @@ export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettings
 
   return (
     <div className="h-full flex flex-col border-l border-zinc-800 bg-void w-72 shrink-0 overflow-hidden">
-      
+
       {/* Custom Styles for Slider */}
       <style>{`
         .forge-slider {
@@ -89,7 +93,7 @@ export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettings
 
       {/* Sliders */}
       <div className="p-6 space-y-8 border-b border-zinc-800">
-        
+
         {/* Complexity */}
         <div className="space-y-3">
           <div className="flex justify-between text-xs text-zinc-500 font-mono uppercase">
@@ -106,8 +110,8 @@ export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettings
             style={{ background: getSliderBackground(settings.complexity) }}
           />
           <div className="flex justify-between text-[10px] text-zinc-600 font-mono">
-             <span>Minimal</span>
-             <span>Monolithic</span>
+            <span>Minimal</span>
+            <span>Monolithic</span>
           </div>
         </div>
 
@@ -126,9 +130,9 @@ export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettings
             className="forge-slider"
             style={{ background: getSliderBackground(settings.chaos) }}
           />
-           <div className="flex justify-between text-[10px] text-zinc-600 font-mono">
-             <span>Safe</span>
-             <span>Eldritch</span>
+          <div className="flex justify-between text-[10px] text-zinc-600 font-mono">
+            <span>Safe</span>
+            <span>Eldritch</span>
           </div>
         </div>
 
@@ -140,36 +144,39 @@ export const RemixStation: React.FC<RemixStationProps> = ({ settings, onSettings
           <h2 className="text-zinc-400 font-bold tracking-[0.2em] text-sm flex items-center gap-2">
             <Zap size={16} className={loadingSparks ? 'text-magma-500' : 'text-zinc-600'} /> SPARKS
           </h2>
-          <button 
-            onClick={fetchSparks} 
+          <button
+            onClick={fetchSparks}
             disabled={loadingSparks}
             className={`text-zinc-600 hover:text-magma-500 transition-colors ${loadingSparks ? 'animate-spin' : ''}`}
           >
             <RefreshCw size={14} />
           </button>
         </div>
-        
+
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {loadingSparks && sparks.length === 0 && (
-                <div className="text-center text-zinc-700 animate-pulse text-xs">IGNITING...</div>
-            )}
-            {sparks.map((spark) => (
-                <div 
-                  key={spark.id} 
-                  onClick={() => onSelectSpark(spark.text)}
-                  className="border border-zinc-800 bg-zinc-900/10 p-3 rounded-sm relative overflow-hidden group hover:border-magma-600/50 hover:bg-zinc-900/30 transition-all cursor-pointer active:scale-95"
-                >
-                    <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <div className="w-1.5 h-1.5 bg-magma-600 rounded-full animate-pulse"></div>
-                    </div>
-                    <p className="text-xs text-zinc-400 group-hover:text-zinc-200 font-mono leading-relaxed select-none">
-                        {spark.text}
-                    </p>
-                    <div className="mt-2 text-[10px] text-zinc-700 font-bold uppercase tracking-widest group-hover:text-magma-700">
-                        [{spark.type}]
-                    </div>
-                </div>
-            ))}
+          {loadingSparks && sparks.length === 0 && (
+            <div className="text-center text-zinc-700 animate-pulse text-xs">IGNITING...</div>
+          )}
+          {sparks.map((spark) => (
+            <div
+              key={spark.id}
+              onClick={() => {
+                playClick();
+                onSelectSpark(spark.text);
+              }}
+              onMouseEnter={() => playHover()}
+              className="border border-zinc-800 bg-zinc-900/10 p-3 rounded-sm relative overflow-hidden group hover:border-magma-600/50 hover:bg-zinc-900/30 transition-all cursor-pointer active:scale-95"
+            >            <div className="absolute top-0 right-0 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-1.5 h-1.5 bg-magma-600 rounded-full animate-pulse"></div>
+              </div>
+              <p className="text-xs text-zinc-400 group-hover:text-zinc-200 font-mono leading-relaxed select-none">
+                {spark.text}
+              </p>
+              <div className="mt-2 text-[10px] text-zinc-700 font-bold uppercase tracking-widest group-hover:text-magma-700">
+                [{spark.type}]
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 

@@ -22,7 +22,7 @@ export const AnvilWorkspace: React.FC<AnvilWorkspaceProps> = ({
 }) => {
   const [status, setStatus] = useState<'idle' | 'generating' | 'complete'>('idle');
 
-  const { playForgeStart, startForgingLoop, stopForgingLoop, playForgeSuccess } = useSoundEffects();
+  const { playForgeStart, startForgingLoop, stopForgingLoop, playForgeSuccess, playClick } = useSoundEffects();
 
   // If a blueprint is loaded externally (restored from graveyard), update local state
   useEffect(() => {
@@ -37,6 +37,7 @@ export const AnvilWorkspace: React.FC<AnvilWorkspaceProps> = ({
     if (!input.trim() || status === 'generating') return;
 
     // Start Audio Experience
+    playClick(); // Immediate feedback
     playForgeStart();
     startForgingLoop();
 

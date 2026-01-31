@@ -1,6 +1,7 @@
 import React from 'react';
 import { Archive, Snowflake, Trash2, Anchor, Zap, Skull, X, ChevronDown } from 'lucide-react';
 import { Idea, IdeaStatus } from '../types';
+import { useSoundEffects } from '../hooks/useSoundEffects';
 
 interface IdeaGraveyardProps {
   ideas: Idea[];
@@ -53,6 +54,8 @@ const getStatusStyles = (status: IdeaStatus, isActive: boolean) => {
 };
 
 export const IdeaGraveyard: React.FC<IdeaGraveyardProps> = ({ ideas, onResurrect, onDelete, onUpdateStatus, onClearWorkspace, currentIdeaId }) => {
+  const { playHover, playClick } = useSoundEffects();
+
   return (
     <div className="h-full flex flex-col border-r border-zinc-800 bg-void w-72 shrink-0 overflow-hidden relative">
 
@@ -71,7 +74,10 @@ export const IdeaGraveyard: React.FC<IdeaGraveyardProps> = ({ ideas, onResurrect
         </div>
 
         <button
-          onClick={onClearWorkspace}
+          onClick={() => {
+            playClick();
+            onClearWorkspace();
+          }}
           title="New Session"
           className="text-zinc-600 hover:text-magma-500 transition-colors p-1"
         >
@@ -93,7 +99,11 @@ export const IdeaGraveyard: React.FC<IdeaGraveyardProps> = ({ ideas, onResurrect
         {ideas.map((idea) => (
           <div
             key={idea.id}
-            onClick={() => onResurrect(idea)}
+            onClick={() => {
+              playClick();
+              onResurrect(idea);
+            }}
+            onMouseEnter={() => playHover()}
             className={`
               group p-3 cursor-pointer overflow-hidden rounded-sm relative
               ${getStatusStyles(idea.status, idea.id === currentIdeaId)}
@@ -103,6 +113,7 @@ export const IdeaGraveyard: React.FC<IdeaGraveyardProps> = ({ ideas, onResurrect
             <button
               onClick={(e) => {
                 e.stopPropagation();
+                playClick();
                 onDelete(idea.id);
               }}
               className="absolute top-2 right-2 p-1.5 text-zinc-700 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity z-20 hover:bg-zinc-900 rounded"
