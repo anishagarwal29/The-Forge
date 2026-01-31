@@ -14,7 +14,7 @@ const IdleMesh = () => (
             {/* Outer Ring - Slow Rotate */}
             <div className="absolute inset-0 border border-magma-900/40 rounded-full border-dashed animate-[spin_20s_linear_infinite]"></div>
             {/* Inner Ring - Fast Reverse Rotate */}
-            <div className="absolute inset-16 border-2 border-magma-800/20 rounded-full animate-[spin_10s_linear_infinite_reverse]"></div>
+            <div className="absolute inset-16 border-2 border-magma-900/20 rounded-full animate-[spin_10s_linear_infinite_reverse]"></div>
 
             {/* Rotating Text */}
             <div className="absolute inset-0 flex items-center justify-center animate-[spin_20s_linear_infinite]">
