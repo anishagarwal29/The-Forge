@@ -26,7 +26,7 @@ const IdleMesh = () => (
 
 // The loading animation
 const MeshSpinner = () => (
-    <div className="absolute inset-0 flex items-center justify-center opacity-90">
+    <div className="absolute inset-0 flex items-center justify-center opacity-60">
         <div className="relative w-[30rem] h-[30rem] border border-magma-500/30 rounded-full animate-mesh-spin">
             <div className="absolute inset-8 border border-magma-500/20 rounded-full border-dashed"></div>
             <div className="absolute inset-24 border border-magma-500/10 rounded-full"></div>
