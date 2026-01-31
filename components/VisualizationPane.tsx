@@ -12,13 +12,13 @@ const IdleMesh = () => (
     <div className="flex flex-col items-center justify-center opacity-80">
         <div className="relative w-96 h-96 flex items-center justify-center">
             {/* Outer Ring - Slow Rotate */}
-            <div className="absolute inset-0 border border-magma-900/40 rounded-full border-dashed animate-[spin_20s_linear_infinite]"></div>
+            <div className="absolute inset-0 border border-magma-500/40 rounded-full border-dashed animate-[spin_20s_linear_infinite]"></div>
             {/* Inner Ring - Fast Reverse Rotate */}
-            <div className="absolute inset-16 border-2 border-magma-900/60 rounded-full animate-[spin_10s_linear_infinite_reverse]"></div>
+            <div className="absolute inset-16 border-2 border-magma-400/50 rounded-full animate-[spin_10s_linear_infinite_reverse]"></div>
 
             {/* Rotating Text */}
             <div className="absolute inset-0 flex items-center justify-center animate-[spin_20s_linear_infinite]">
-                <span className="font-mono text-7xl tracking-widest text-magma-900/20 font-black select-none">MESH</span>
+                <span className="font-mono text-7xl tracking-widest text-magma-600/30 font-black select-none">MESH</span>
             </div>
         </div>
     </div>
